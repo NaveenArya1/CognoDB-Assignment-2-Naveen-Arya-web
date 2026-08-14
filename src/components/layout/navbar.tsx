@@ -41,19 +41,11 @@ export const Navbar = () => {
                 >
                   {label}
                 </Link>
-                {pathname === href && (
-                  <div className="w-0.5 h-2.5 bg-primary rounded-r-full ml-1"></div>
-                )}
               </motion.div>
             ))}
           </div>
 
           <div className="flex items-center gap-2">
-            <Link href="/graph">
-              <Button variant="outline" size="sm" className="text-primary hover:bg-primary/10">
-                Explore Graph
-              </Button>
-            </Link>
           </div>
         </div>
       </div>
