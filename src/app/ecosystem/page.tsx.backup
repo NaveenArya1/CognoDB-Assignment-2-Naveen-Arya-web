@@ -1,0 +1,203 @@
+"use client";
+
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { useTechnologies } from "@/providers/QueryProvider";
+
+export default function EcosystemPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const search = searchParams.get("search") || "";
+  const selectedTechId = searchParams.get("tech") || "";
+
+  const { data: technologies, isLoading, error, isServiceUnavailable } = useTechnologies();
+
+  const updateFilters = (searchValue: string, techId: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (searchValue) params.set("search", searchValue);
+    else params.delete("search");
+
+    if (techId) params.set("tech", techId);
+    else params.delete("tech");
+
+    router.replace(`?${params.toString()}`);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-16">
+        <div className="glass rounded-xl p-10 text-center text-muted-foreground">Loading technologies...</div>
+      </div>
+    );
+  }
+
+  if (isServiceUnavailable) {
+    return (
+      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-16">
+        <div className="glass max-w-md rounded-2xl p-8 text-center">
+          <div className="mb-4 text-4xl">������</div>
+          <h2 className="mb-2 text-2xl font-bold">Service unavailable</h2>
+          <p className="mb-6 text-muted-foreground">Technology data is temporarily unavailable. Please try again later.</p>
+          <Button onClick={() => window.location.reload()}>Retry</Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-16">
+        <div className="glass max-w-md rounded-2xl p-8 text-center">
+          <div className="mb-4 text-4xl">���</div>
+          <h2 className="mb-2 text-2xl font-bold">Could not load technologies</h2>
+          <p className="mb-6 text-muted-foreground">{error.message || "Unexpected error while loading technologies."}</p>
+          <Button onClick={() => window.location.reload()}>Retry</Button>
+        </div>
+      </div>
+    );
+  }
+
+  const filteredTechnologies = technologies?.filter(tech =>
+    !search || tech.name.toLowerCase().includes(search.toLowerCase())
+  ) || [];
+
+  const selectedTechnology = filteredTechnologies.find(tech => tech.id === selectedTechId);
+
+  return (
+    <div className="min-h-[calc(100vh-4rem)] px-4 py-12 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-6xl">
+        <motion.header initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-8 text-center">
+          <h1 className="text-4xl font-bold gradient-text">Explore Technology Ecosystems</h1>
+          <p className="mt-2 text-muted-foreground">Understand how technologies connect and influence each other</p>
+        </motion.header>
+
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="mb-8 flex flex-col gap-4 sm:flex-row">
+          <input
+            value={search}
+            onChange={(event) => updateFilters(event.target.value, selectedTechId)}
+            placeholder="Search technologies..."
+            className="w-full rounded-md border border-border bg-background/80 px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/60 sm:max-w-md"
+          />
+
+          <select
+            value={selectedTechId}
+            onChange={(event) => updateFilters(search, event.target.value)}
+            className="rounded-md border border-border glass px-4 pr-8 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/60 transition-all duration-200 hover:bg-white/[0.05] focus-within:bg-white/[0.08]"
+          >
+            <option value="">Select a technology</option>
+            {filteredTechnologies.map((tech) => (
+              <option key={tech.id} value={tech.id}>{tech.name}</option>
+            ))}
+          </select>
+
+          <Button variant="outline" onClick={() => updateFilters("", "")} className="sm:w-auto">
+            Clear Filters
+          </Button>
+        </motion.div>
+
+        {selectedTechnology ? (
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-8">
+            <h2 className="text-3xl font-bold text-center">Ecosystem for {selectedTechnology.name}</h2>
+            <p className="mt-2 text-center text-muted-foreground max-w-2xl mx-auto">
+              Explore the technologies, projects, and relationships that surround {selectedTechnology.name}
+            </p>
+          </motion.div>
+        ) : (
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-8">
+            <h2 className="text-3xl font-bold text-center">Browse Technology Ecosystems</h2>
+            <p className="mt-2 text-center text-muted-foreground max-w-2xl mx-auto">
+              Select a technology to explore its ecosystem of related technologies and projects
+            </p>
+          </motion.div>
+        )}
+
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 overflow-y-auto pb-8">
+          {selectedTechnology ? (
+            <>
+              {/* Related Technologies */}
+              <div className="glass rounded-xl border border-border/30 p-6">
+                <h3 className="font-semibold mb-4">Related Technologies</h3>
+                {/* This would normally come from an API endpoint like /api/technologies/${id}/related */}
+                {/* For now, we'll show a placeholder */}
+                <div className="space-y-4">
+                  <p className="text-center text-muted-foreground py-6">
+                    Related technologies data would be displayed here
+                  </p>
+                </div>
+              </div>
+
+              {/* Projects */}
+              <div className="glass rounded-xl border border-border/30 p-6">
+                <h3 className="font-semibold mb-4">Projects Using This Technology</h3>
+                {/* This would normally come from an API endpoint like /api/technologies/${id}/projects */}
+                <div className="space-y-4">
+                  <p className="text-center text-muted-foreground py-6">
+                    Projects data would be displayed here
+                  </p>
+                </div>
+              </div>
+
+              {/* Ecosystem Overview */}
+              <div className="glass rounded-xl border border-border/30 p-6">
+                <h3 className="font-semibold mb-4">Ecosystem Overview</h3>
+                <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    <strong>Technology:</strong> {selectedTechnology.name}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    <strong>Category:</strong> {selectedTechnology.category}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    <strong>Description:</strong> {selectedTechnology.description}
+                  </p>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Technology Cards Grid */}
+              {filteredTechnologies.length === 0 ? (
+                <div className="glass col-span-full rounded-xl p-10 text-center text-muted-foreground">
+                  No technologies match your search.
+                </div>
+              ) : (
+                filteredTechnologies.map((tech) => (
+                  <Link key={tech.id} href={`/ecosystem?tech=${tech.id}`}>
+                    <div className="glass rounded-xl border border-border/30 p-6 transition-all duration-300 hover:border-primary/40 h-[200px] flex flex-col">
+                      <div className="mb-4 flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/15 text-primary">
+                            {tech.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-primary">{tech.name}</h3>
+                            <p className="text-xs text-muted-foreground">{tech.category}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <p className="flex-1 text-sm text-muted-foreground line-clamp-3">
+                        {tech.description}
+                      </p>
+                      <div className="mt-4">
+                        <Button variant="outline" size="sm">
+                          Explore Ecosystem
+                        </Button>
+                      </div>
+                    </div>
+                  </Link>
+                ))
+              )}
+            </>
+          )}
+        </motion.div>
+
+        <div className="mt-10 text-center text-sm text-muted-foreground">
+          Showing {filteredTechnologies.length} of {technologies?.length || 0} technologies
+        </div>
+      </div>
+    </div>
+  );
+}
